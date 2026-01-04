@@ -1,0 +1,42 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info/
+.eggs/
+
+# Virtual environments
+.venv
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# IDE
+.idea/
+
+# Testing and quality tools
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+coverage.xml
+
+# Database
+*.db
+*.sqlite3
+
+# Logs
+*.log
+
+# Other
+node_modules/
+*.exe
+.claude/
+deploy/
+CLAUDE.MD
+bruno/

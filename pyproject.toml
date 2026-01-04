@@ -1,0 +1,222 @@
+[project]
+name = "my-project"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = []
+
+[project.scripts]
+my-project = "app.main:main"
+
+[dependency-groups]
+dev = [
+    "bandit>=1.9.2",
+    "httpx>=0.28.1",
+    "mypy>=1.19.1",
+    "pre-commit>=4.5.1",
+    "pytest>=9.0.2",
+    "pytest-asyncio>=1.3.0",
+    "pytest-cov>=7.0.0",
+    "ruff>=0.14.10",
+    "faker>=39.0.0",
+]
+
+[build-system]
+requires = ["setuptools>=80"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["app"]
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "-ra",
+    "--strict-markers",
+    "--ignore=docs",
+    "--ignore=setup.py",
+    "--ignore=.eggs",
+    "--tb=short",
+    "--cov=app",
+    "--cov-report=term-missing:skip-covered",
+    "--cov-report=html",
+    "--cov-report=xml",
+    "--cov-fail-under=80",
+]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "cleanup: marks tests that test database cleanup functionality",
+    "unit: marks tests as unit tests",
+    "asyncio: marks tests as async tests",
+]
+filterwarnings = ["error", "ignore::UserWarning", "ignore::DeprecationWarning"]
+
+# Ruff configuration
+[tool.ruff]
+# Python version
+target-version = "py314"
+
+# Line length
+line-length = 88
+
+# Enable specific rule sets
+lint.select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # Pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+    "SIM", # flake8-simplify
+    "S",   # bandit security
+    "T20", # flake8-print
+    "N",   # pep8-naming
+    "ERA", # eradicate commented code
+    "PL",  # pylint
+    "RUF", # ruff-specific rules
+]
+
+# Ignore specific rules
+lint.ignore = [
+    "E501",    # line too long (handled by ruff-format)
+    "W505",    # doc line too long (handled by ruff-format)
+    "S603",    # subprocess call (OK for legitimate use)
+    "PLR0913", # too many arguments (sometimes necessary)
+    "ERA001",  # commented out code is OK
+    "T201",    # print is OK in scripts/etc.
+    "B008",    # function call in default arg (FastAPI Query/Path/Body pattern)
+]
+
+# Exclude patterns
+exclude = [
+    ".git",
+    "__pycache__",
+    ".pytest_cache",
+    ".mypy_cache",
+    ".ruff_cache",
+    "htmlcov",
+    "migrations",
+    "venv",
+    "env",
+    ".vscode",
+]
+
+# Per-file ignores
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = [
+    "S101",    # assert allowed in tests
+    "PLR2004", # magic values OK in tests
+    "S106",    # hardcoded passwords OK in tests
+    "E402",    # module level import not at top of file (OK for test setup)
+]
+
+# isort configuration
+[tool.ruff.lint.isort]
+known-first-party = ["app"]
+force-single-line = false
+combine-as-imports = true
+
+# MyPy configuration
+[tool.mypy]
+# Python version
+python_version = "3.14"
+
+# Basic options
+check_untyped_defs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_return_any = true
+warn_unreachable = true
+strict_equality = true
+
+# Error formatting
+show_error_codes = true
+show_column_numbers = true
+color_output = true
+error_summary = true
+
+# Import handling
+ignore_missing_imports = true
+follow_imports = "normal"
+
+# Cache
+cache_dir = ".mypy_cache"
+
+# Exclude patterns
+exclude = [
+    "migrations/",
+    "tests/fixtures/",
+    "htmlcov/",
+    "build/",
+    "dist/",
+    ".vscode/",
+]
+
+# Per-module options
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+
+# Bandit security scanner configuration
+[tool.bandit]
+exclude_dirs = ["tests", "migrations", ".vscode"]
+skips = ["B101"]                                  # Skip assert_used test
+
+# Pyright configuration
+[tool.pyright]
+pythonVersion = "3.14"
+pythonPlatform = "All"
+typeCheckingMode = "strict"
+
+# Include/exclude patterns
+include = ["app", "scripts", "tests"]
+exclude = [
+    "**/__pycache__",
+    "**/node_modules",
+    "**/.git",
+    "migrations",
+    "htmlcov",
+    ".venv",
+    "venv",
+    "alembic",
+]
+
+# Report settings
+reportMissingImports = true
+reportMissingTypeStubs = false
+reportMissingParameterType = "none"
+reportUnknownParameterType = "warning"
+reportUnknownArgumentType = "warning"
+reportUnknownMemberType = "warning"
+reportUnknownVariableType = "warning"
+reportUnknownLambdaType = "warning"
+reportCallIssue = "warning"
+reportOptionalMemberAccess = "warning"
+reportInvalidTypeForm = "warning"
+reportReturnType = "warning"
+reportOperatorIssue = "warning"
+reportUnusedImport = true
+reportUnusedVariable = true
+reportUnusedClass = true
+reportUnusedFunction = true
+reportDuplicateImport = true
+reportPrivateUsage = true
+reportConstantRedefinition = true
+reportIncompatibleMethodOverride = true
+reportIncompatibleVariableOverride = true
+reportUntypedFunctionDecorator = false
+reportUntypedClassDecorator = false
+reportUntypedBaseClass = false
+reportGeneralTypeIssues = true

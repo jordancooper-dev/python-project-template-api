@@ -1,0 +1,10 @@
+{
+    "recommendations": [
+        "ms-toolsai.jupyter",
+        "ms-python.python",
+        "ms-python.mypy-type-checker",
+        "ms-python.vscode-pylance",
+        "ms-python.debugpy",
+        "charliermarsh.ruff"
+    ]
+}
