@@ -1,6 +1,8 @@
 """Alembic environment configuration for async migrations."""
 
 import asyncio
+import selectors
+import sys
 from logging.config import fileConfig
 
 from alembic import context
@@ -66,8 +68,21 @@ async def run_async_migrations() -> None:
 
 
 def run_migrations_online() -> None:
-    """Run migrations in 'online' mode."""
-    asyncio.run(run_async_migrations())
+    """Run migrations in 'online' mode.
+
+    On Windows, psycopg3 requires SelectorEventLoop instead of ProactorEventLoop.
+    We create the loop with a selector to ensure compatibility.
+    """
+    if sys.platform == "win32":
+        # psycopg3 on Windows requires SelectorEventLoop
+        selector = selectors.SelectSelector()
+        loop = asyncio.SelectorEventLoop(selector)
+        try:
+            loop.run_until_complete(run_async_migrations())
+        finally:
+            loop.close()
+    else:
+        asyncio.run(run_async_migrations())
 
 
 if context.is_offline_mode():

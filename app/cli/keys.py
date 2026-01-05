@@ -1,6 +1,10 @@
 """CLI commands for API key management."""
 
 import asyncio
+import selectors
+import sys
+from collections.abc import Coroutine
+from typing import Any
 
 import typer
 from rich.console import Console
@@ -15,9 +19,21 @@ console = Console()
 error_console = Console(stderr=True)
 
 
-def run_async(coro: object) -> object:
-    """Run an async coroutine synchronously."""
-    return asyncio.run(coro)  # type: ignore[arg-type]
+def run_async(coro: Coroutine[Any, Any, Any]) -> Any:
+    """Run an async coroutine synchronously.
+
+    On Windows, psycopg3 requires SelectorEventLoop instead of ProactorEventLoop.
+    """
+    if sys.platform == "win32":
+        # psycopg3 on Windows requires SelectorEventLoop
+        selector = selectors.SelectSelector()
+        loop = asyncio.SelectorEventLoop(selector)
+        try:
+            return loop.run_until_complete(coro)
+        finally:
+            loop.close()
+    else:
+        return asyncio.run(coro)
 
 
 def handle_db_error(e: SQLAlchemyError) -> None:
@@ -52,7 +68,7 @@ def create_key(
                 console.print(f"[bold]Prefix:[/bold] {result.key_prefix}")
                 console.print()
                 console.print(
-                    "[bold yellow]⚠️  IMPORTANT: Save this key now - "
+                    "[bold yellow]IMPORTANT: Save this key now - "
                     "it will only be shown once![/bold yellow]"
                 )
                 console.print()

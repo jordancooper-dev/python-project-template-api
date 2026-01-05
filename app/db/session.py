@@ -76,16 +76,15 @@ def get_engine() -> AsyncEngine:
     )
 
     # Set statement timeout on new connections (PostgreSQL-specific)
-    # Using parameterized query to prevent SQL injection
+    # Note: SET commands don't support parameterized queries in PostgreSQL.
+    # The value is an integer from validated settings, so string formatting is safe.
     @event.listens_for(engine.sync_engine, "connect")
     def set_statement_timeout(  # pyright: ignore[reportUnusedFunction]
         dbapi_connection: object, connection_record: object
     ) -> None:
         cursor = dbapi_connection.cursor()  # type: ignore[attr-defined]
-        # Use parameterized query - %s is safe with psycopg
-        cursor.execute(
-            "SET statement_timeout = %s", (settings.database_statement_timeout,)
-        )
+        # SET doesn't support parameters, but value is validated integer from settings
+        cursor.execute(f"SET statement_timeout = {settings.database_statement_timeout}")
         cursor.close()
 
     return engine
