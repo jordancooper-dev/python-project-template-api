@@ -3,6 +3,7 @@
 from collections.abc import AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
 from importlib.metadata import PackageNotFoundError, version as get_version
+from typing import ClassVar
 
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
@@ -84,6 +85,9 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     """Middleware to add security headers to all responses."""
 
+    # Paths that need relaxed CSP for external resources (Swagger UI)
+    DOCS_PATHS: ClassVar[set[str]] = {"/docs", "/redoc", "/openapi.json"}
+
     async def dispatch(
         self,
         request: Request,
@@ -95,13 +99,24 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["X-XSS-Protection"] = "1; mode=block"
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-        response.headers["Content-Security-Policy"] = (
-            "default-src 'self'; "
-            "script-src 'self'; "
-            "style-src 'self'; "
-            "img-src 'self' data:; "
-            "frame-ancestors 'none'"
-        )
+
+        # Use relaxed CSP for docs endpoints to allow Swagger UI assets
+        if request.url.path in self.DOCS_PATHS:
+            response.headers["Content-Security-Policy"] = (
+                "default-src 'self'; "
+                "script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline'; "
+                "style-src 'self' https://cdn.jsdelivr.net 'unsafe-inline'; "
+                "img-src 'self' data: https://cdn.jsdelivr.net https://fastapi.tiangolo.com; "
+                "frame-ancestors 'none'"
+            )
+        else:
+            response.headers["Content-Security-Policy"] = (
+                "default-src 'self'; "
+                "script-src 'self'; "
+                "style-src 'self'; "
+                "img-src 'self' data:; "
+                "frame-ancestors 'none'"
+            )
         return response
 
 
